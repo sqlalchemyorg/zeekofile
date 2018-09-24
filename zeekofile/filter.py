@@ -2,11 +2,11 @@ import sys
 import os
 import logging
 
-import util
+from . import util
+from .cache import bf
 
 logger = logging.getLogger("zeekofile.filter")
 
-from cache import bf
 bf.filter = sys.modules['zeekofile.filter']
 
 __loaded_filters = {} #name -> mod
@@ -21,17 +21,17 @@ def run_chain(chain, content):
     """Run content through a filter chain.
 
     Works with either a string or a sequence of filters"""
-    if chain is None: #pragma: no cover
+    if chain is None:
         return content
-    if not hasattr(chain, '__iter__'):
-        #Not a sequence, must be a string, parse it
+
+    if isinstance(chain, str):
         chain = parse_chain(chain)
     for fn in chain:
         f = load_filter(fn)
         logger.debug("Applying filter: " + fn)
         content = f.run(content)
     logger.debug("Content: " + content)
-    return util.force_unicode(content)
+    return content
 
 
 def parse_chain(chain):
@@ -64,7 +64,7 @@ def preload_filters(directory="_filters"):
 
 #TODO: seems almost identical to controllers.init_controllers; commonize
 def init_filters():
-    """Filters have an optional init method that runs before the site is 
+    """Filters have an optional init method that runs before the site is
     built"""
     for filt in bf.config.filters.values():
         if "mod" in filt:

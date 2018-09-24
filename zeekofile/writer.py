@@ -8,19 +8,14 @@ current working directory.
 
 import logging
 import os
-import sys
 import stat
-import traceback
 import shutil
 import tempfile
-import time
-import argparse
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions as mako_exceptions
 
-from .cache import bf
-from . import config, site_init, util, server, cache, filter, controller
+from . import config, util, cache, filter, controller
 
 __author__ = "Ryan McGuire (ryan@enigmacurry.com)"
 
@@ -35,7 +30,8 @@ def _file_mtime(f):
         st = os.stat(f)
         return st[stat.ST_MTIME]
 
-def _check_output(state):
+
+def _check_output(state, output_dir):
     starting = not(state)
     for src, dest in _walk_files(output_dir, True):
         src_mtime = _file_mtime(src)
@@ -48,17 +44,11 @@ def _check_output(state):
             _rebuild()
             break
 
-def _rebuild():
+
+def _rebuild(output_dir):
     writer = Writer()
-    logger.debug("Running user's pre_build() function...")
-    config.pre_build()
-    try:
-        writer.write_site()
-        logger.debug("Running user's post_build() function...")
-        config.post_build()
-    finally:
-        logger.debug("Running user's build_finally() function...")
-        config.build_finally()
+    writer.write_site(output_dir)
+
 
 def _walk_files(output_dir, include_src_templates):
 
@@ -106,23 +96,22 @@ class Writer(object):
                 encoding_errors='replace')
 
     def _load_bf_cache(self):
-        #Template cache object, used to transfer state to/from each template:
         self.bf = cache.bf
         self.bf.writer = self
         self.bf.logger = logger
 
-    def write_site(self):
+    def write_site(self, output_dir):
         self._load_bf_cache()
         self._init_filters_controllers()
         self._run_controllers()
         self._write_files()
-        self._copy_to_site()
+        self._copy_to_site(output_dir)
 
     def copyfile(self, src, dest):
         logger.debug("Copying file: " + src)
         shutil.copyfile(src, dest)
 
-    def _copy_to_site(self):
+    def _copy_to_site(self, output_dir):
         files_ = []
         self._copytree(self.output_dir, output_dir, files_)
         shutil.rmtree(self.output_dir)
@@ -160,12 +149,12 @@ class Writer(object):
 
             if src.endswith(".mako"):
                 #Process this template file
-                with open(src) as t_file:
-                    template = Template(t_file.read().decode("utf-8"),
-                                        output_encoding="utf-8",
-                                        lookup=self.template_lookup)
+                with open(src, encoding='utf-8') as t_file:
+                    template = Template(t_file.read(),
+                                        lookup=self.template_lookup,
+                                        output_encoding=None)
                     #Remember the original path for later when setting context
-                    template.bf_meta = {"path":src}
+                    template.bf_meta = {"path": src}
 
                 with self._output_file(dest) as html_file:
                     html = self.template_render(template)
@@ -184,27 +173,27 @@ class Writer(object):
         controller.run_all()
 
     def _output_file(self, name):
-        return open(name, 'w')
+        return open(name, 'w', encoding='utf-8')
 
     def template_render(self, template, attrs={}):
         """Render a template"""
-        #Create a context object that is fresh for each template render
+        # Create a context object that is fresh for each template render
         self.bf.template_context = cache.Cache(**attrs)
-        #Provide the name of the template we are rendering:
+        # Provide the name of the template we are rendering:
         self.bf.template_context.template_name = template.uri
         try:
-            #Static pages will have a template.uri like memory:0x1d80a90
-            #We conveniently remembered the original path to use instead.
+            # Static pages will have a template.uri like memory:0x1d80a90
+            # We conveniently remembered the original path to use instead.
             self.bf.template_context.template_name = template.bf_meta['path']
         except AttributeError:
             pass
         attrs['bf'] = self.bf
-        #Provide the template with other user defined namespaces:
+        # Provide the template with other user defined namespaces:
         for name, obj in self.bf.config.site.template_vars.items():
             attrs[name] = obj
         try:
-            return template.render(**attrs)
-        except: #pragma: no cover
+            return template.render_unicode(**attrs)
+        except:
             logger.error("Error rendering template")
             print(mako_exceptions.text_error_template().render())
         del self.bf.template_context

@@ -1,11 +1,12 @@
 import sys
 
+
 class Cache(dict):
     """A cache object used for attatching things we want to remember
 
     This works like a normal object, attributes that are undefined
     raise an AttributeError
-    
+
     >>> c = Cache()
     >>> c.whatever = "whatever"
     >>> c.whatever
@@ -19,13 +20,14 @@ class Cache(dict):
         dict.__init__(self, kw)
         self.__dict__ = self
 
+
 class HierarchicalCache(Cache):
     """A cache object used for attatching things we want to remember
-    
+
     This works differently than a normal object, attributes that
     are undefined do *not* raise an AttributeError but are silently
     created as an additional HierarchicalCache object.
-    
+
     >>> c = HierarchicalCache()
     >>> c.whatever = "whatever"
     >>> c.whatever
@@ -52,7 +54,7 @@ class HierarchicalCache(Cache):
         if not attr.startswith("_") and \
                 "(" not in attr and \
                 "[" not in attr and \
-                attr != "trait_names": 
+                attr != "trait_names":
             c = HierarchicalCache()
             Cache.__setitem__(self, attr, c)
             return c
@@ -78,7 +80,7 @@ class HierarchicalCache(Cache):
         raise TypeError("HierarchicalCache objects are not callable. If "
                         "you were expecting this to be a method, a "
                         "parent cache object may be inproperly configured.")
-    
+
     def __setitem__(self, key, item):
         c = self
         try:
@@ -92,7 +94,7 @@ class HierarchicalCache(Cache):
         finally:
             Cache.__setitem__(c, key, item)
 
-#The main zeekofile cache object, transfers state between templates
+# The main zeekofile cache object, transfers state between templates
 bf = HierarchicalCache()
 sys.modules['zeekofile_bf'] = bf
 bf.cache = sys.modules['zeekofile.cache']

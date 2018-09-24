@@ -1,69 +1,69 @@
-################################################################################
-## Controllers
-##
-## Blogofile controllers reside in the user's _controllers directory
-## and can generate content for a site.
-##
-## Controllers can either be standalone .py files, or they can be modules.
-##
-## Every controller has a contract to provide the following:
-##  * a run() method, which accepts no arguments.
-##  * A dictionary called "config" containing the following information:
-##    * name - The human friendly name for the controller.
-##    * author - The name or group responsible for writing the controller.
-##    * description - A brief description of what the controller does.
-##    * url - The URL where the controller is hosted.
-##    * priority - The default priority to determine sequence of execution
-##       This is optional, if not provided, it will default to 50.
-##       Controllers with higher priorities get run sooner than ones with
-##       lower priorities.
-##
-## Example controller (either a standalone .py file or
-##                       __init__.py inside a module):
-##
-##     config = {"name"        : "My Controller",
-##               "description" : "Does cool stuff",
-##               "author"      : "Joe Programmer",
-##               "url"         : "http://www.yoururl.com/my-controller",
-##               "priority"    : 90.0}
-## 
-##     def run():
-##         do_whatever_it_needs_to()
-##
-## Users can configure a controller in _config.py:
-##
-##   #To enable the controller (default is always disabled):
-##   controller.name_of_controller.enabled = True
-##
-##   #To set the priority:
-##   controllers.name_of_controller.priority = 40
-##
-##   #To set a controller specific setting:
-##   controllers.name_of_controller.nifty_setting = "whatever"
-##
-## Settings set in _config.py always override any default configuration
-## for the controller.
-##
-## TODO: implement this :)
-##
-################################################################################
+"""
+ Controllers
+
+ Blogofile controllers reside in the user's _controllers directory
+ and can generate content for a site.
+
+ Controllers can either be standalone .py files, or they can be modules.
+
+ Every controller has a contract to provide the following:
+  * a run() method, which accepts no arguments.
+  * A dictionary called "config" containing the following information:
+    * name - The human friendly name for the controller.
+    * author - The name or group responsible for writing the controller.
+    * description - A brief description of what the controller does.
+    * url - The URL where the controller is hosted.
+    * priority - The default priority to determine sequence of execution
+       This is optional, if not provided, it will default to 50.
+       Controllers with higher priorities get run sooner than ones with
+       lower priorities.
+
+ Example controller (either a standalone .py file or
+                       __init__.py inside a module):
+
+     config = {"name"        : "My Controller",
+               "description" : "Does cool stuff",
+               "author"      : "Joe Programmer",
+               "url"         : "http://www.yoururl.com/my-controller",
+               "priority"    : 90.0}
+
+     def run():
+         do_whatever_it_needs_to()
+
+ Users can configure a controller in _config.py:
+
+   #To enable the controller (default is always disabled):
+   controller.name_of_controller.enabled = True
+
+   #To set the priority:
+   controllers.name_of_controller.priority = 40
+
+   #To set a controller specific setting:
+   controllers.name_of_controller.nifty_setting = "whatever"
+
+ Settings set in _config.py always override any default configuration
+ for the controller.
+"""
+
 import sys
 import os
 import operator
 import logging
 
-from cache import bf
+from .cache import bf
 
 logger = logging.getLogger("zeekofile.controller")
 
-__loaded_controllers = {} #name -> module
+__loaded_controllers = {}
 
-default_controller_config = {"name"        : None,
-                             "description" : None,
-                             "author"      : None,
-                             "url"         : None,
-                             "priority"    : 50.0,
-                             "enabled"     : False}
+default_controller_config = {
+    "name": None,
+    "description": None,
+    "author": None,
+    "url": None,
+    "priority": 50.0,
+    "enabled": False
+}
 
 
 #TODO: seems almost identical to filters.preload_filters; commonize
@@ -114,7 +114,7 @@ def load_controller(name, directory="_controllers"):
         try:
             sys.dont_write_bytecode = True
             controller = __import__(name)
-        except (ImportError,),e:
+        except ImportError as e:
             logger.error(
                 "Cannot import controller : {0} ({1})".format(name, e))
             raise
@@ -146,8 +146,8 @@ def load_controller(name, directory="_controllers"):
     finally:
         sys.path.remove("_controllers")
         sys.dont_write_bytecode = initial_dont_write_bytecode
-    
-        
+
+
 def load_controllers(directory="_controllers"):
     """Find all the controllers in the _controllers directory
     and import them into the bf context"""

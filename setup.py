@@ -30,7 +30,7 @@ classifiers.extend([
 ])
 
 setup(
-    name="zeekfile",
+    name="zeekofile",
     version=zeekofile.__version__,
     description="A static website compiler",
     long_description=long_description,

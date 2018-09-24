@@ -5,27 +5,35 @@ import traceback
 import time
 import argparse
 
-from . import config, site_init, util, server, cache, filter, controller
+from . import config, util, server
+from .writer import _rebuild, _check_output
+
+logger = logging.getLogger(__name__)
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--src-dir", dest="src_dir",
-                        help="Your site's source directory "
-                                 "(default is current directory)",
-                        metavar="DIR", default=os.curdir)
-    parser.add_argument("-v", "--verbose", dest="verbose",
-                                 default=False, action="store_true",
-                                 help="Be verbose")
-    parser.add_argument("-vv", "--veryverbose", dest="veryverbose",
-                                 default=False, action="store_true",
-                                 help="Be extra verbose")
-    parser.add_argument("PORT", nargs="?", default="8080",
-                         help="TCP port to use")
-    parser.add_argument("IP_ADDR", nargs="?", default="127.0.0.1",
-                         help="IP address to bind to. Defaults to loopback only "
-                         "(127.0.0.1). 0.0.0.0 binds to all network interfaces, "
-                         "please be careful!")
+    parser.add_argument(
+        "-s", "--src-dir", dest="src_dir",
+        help="Your site's source directory "
+              "(default is current directory)",
+        metavar="DIR", default=os.curdir)
+    parser.add_argument(
+        "-v", "--verbose", dest="verbose",
+        default=False, action="store_true",
+        help="Be verbose")
+    parser.add_argument(
+        "-vv", "--veryverbose", dest="veryverbose",
+        default=False, action="store_true",
+        help="Be extra verbose")
+    parser.add_argument(
+        "PORT", nargs="?", default="8080",
+        help="TCP port to use")
+    parser.add_argument(
+        "IP_ADDR", nargs="?", default="127.0.0.1",
+        help="IP address to bind to. Defaults to loopback only "
+             "(127.0.0.1). 0.0.0.0 binds to all network interfaces, "
+             "please be careful!")
     args = parser.parse_args()
     return (parser, args)
 
@@ -50,11 +58,10 @@ def main(argv=None, **kwargs):
 
     config_init(args)
 
-    global output_dir
     output_dir = util.path_join("_site", util.fs_site_path_helper())
 
-    print ("Running an initial build")
-    _rebuild()
+    print("Running an initial build")
+    _rebuild(output_dir)
 
     bfserver = server.Server(args.PORT, args.IP_ADDR)
     bfserver.start()
@@ -62,11 +69,11 @@ def main(argv=None, **kwargs):
     while not bfserver.is_shutdown:
         try:
             time.sleep(.5)
-            _check_output(state)
+            _check_output(state, output_dir)
         except KeyboardInterrupt:
             bfserver.shutdown()
         except:
-            print traceback.print_exc()
+            print(traceback.print_exc())
 
 
 def config_init(args):

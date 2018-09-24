@@ -1,14 +1,15 @@
-import SimpleHTTPServer
-import BaseHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from http.server import HTTPServer
 import logging
 import os
 import sys
 import re
-from urlparse import urlparse
+from urllib.parse import urlparse
 import threading
 
-from zeekofile import config, util
-from cache import bf
+from . import config
+from . import util
+from .cache import bf
 
 bf.server = sys.modules['zeekofile.server']
 
@@ -27,7 +28,7 @@ class Server(threading.Thread):
         self.is_shutdown = False
         server_address = (address, self.port)
         HandlerClass = BlogofileRequestHandler
-        ServerClass = BaseHTTPServer.HTTPServer
+        ServerClass = HTTPServer
         HandlerClass.protocol_version = "HTTP/1.0"
         self.httpd = ServerClass(server_address, HandlerClass)
         self.sa = self.httpd.socket.getsockname()
@@ -43,7 +44,7 @@ class Server(threading.Thread):
         self.is_shutdown = True
 
 
-class BlogofileRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class BlogofileRequestHandler(SimpleHTTPRequestHandler):
 
     error_template = """
 <head>
@@ -58,7 +59,7 @@ for the root page? : <a href="{0}">{1}</a>
     def __init__(self, *args, **kwargs):
         path = urlparse(config.site.url).path
         self.BLOGOFILE_SUBDIR_ERROR = self.error_template.format(path, path)
-        SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(
+        SimpleHTTPRequestHandler.__init__(
                 self, *args, **kwargs)
 
     def translate_path(self, path):
@@ -68,7 +69,7 @@ for the root page? : <a href="{0}">{1}</a>
             self.error_message_format = self.BLOGOFILE_SUBDIR_ERROR
             return "" #Results in a 404
 
-        p = SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(
+        p = SimpleHTTPRequestHandler.translate_path(
             self, path)
         if len(site_path.strip("/")) > 0:
             build_path = os.path.join(
@@ -78,6 +79,6 @@ for the root page? : <a href="{0}">{1}</a>
             build_path = os.getcwd()
         build_path = re.sub(build_path, os.path.join(os.getcwd(),"_site"), p)
         return build_path
-    
+
     def log_message(self, format, *args):
         pass
