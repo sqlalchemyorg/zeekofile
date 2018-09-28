@@ -149,7 +149,8 @@ class Writer(object):
                 with open(src, encoding='utf-8') as t_file:
                     template = Template(t_file.read(),
                                         lookup=self.template_lookup,
-                                        output_encoding=None)
+                                        output_encoding=None,
+                                        strict_undefined=True)
                     template.zf_meta = {"path": src}
 
                 with self._output_file(dest) as html_file:
