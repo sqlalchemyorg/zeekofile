@@ -2,11 +2,7 @@
 \#*
 .#*
 *.pyc
-*.ropeproject/*
-/Blogofile.egg-info/*
+/zeekofile.egg-info/*
 /build/*
 /dist/*
-/blogofile/.ropeproject*
-/blogofile/site_init/*.zip
 _site/*
-_documentation/themes/blogofile/layout.html

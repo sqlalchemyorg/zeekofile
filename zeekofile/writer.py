@@ -17,8 +17,6 @@ from mako import exceptions as mako_exceptions
 
 from . import config, util, cache, filter, controller
 
-__author__ = "Ryan McGuire (ryan@enigmacurry.com)"
-
 
 logger = logging.getLogger("zeekofile.writer")
 
@@ -57,8 +55,8 @@ def _walk_files(output_dir, include_src_templates):
             root = root[2:]
 
         for d in list(dirs):
-            #Exclude some dirs
-            d_path = util.path_join(root,d)
+            # Exclude some dirs
+            d_path = util.path_join(root, d)
             if util.should_ignore_path(d_path) and (
                 not include_src_templates or
                 not d.startswith('_') or
@@ -86,22 +84,22 @@ class Writer(object):
 
     def __init__(self):
         self.config = config
-        #Base templates are templates (usually in ./_templates) that are only
-        #referenced by other templates.
+        # Base templates are templates (usually in ./_templates) that are only
+        # referenced by other templates.
         self.base_template_dir = util.path_join(".", "_templates")
         self.output_dir = tempfile.mkdtemp()
         self.template_lookup = TemplateLookup(
-                directories=[".", self.base_template_dir],
-                input_encoding='utf-8', output_encoding='utf-8',
-                encoding_errors='replace')
+            directories=[".", self.base_template_dir],
+            input_encoding='utf-8', output_encoding='utf-8',
+            encoding_errors='replace')
 
-    def _load_bf_cache(self):
-        self.bf = cache.bf
-        self.bf.writer = self
-        self.bf.logger = logger
+    def _load_zf_cache(self):
+        self.zf = cache.zf
+        self.zf.writer = self
+        self.zf.logger = logger
 
     def write_site(self, output_dir):
-        self._load_bf_cache()
+        self._load_zf_cache()
         self._init_filters_controllers()
         self._run_controllers()
         self._write_files()
@@ -148,23 +146,19 @@ class Writer(object):
                 util.mkdir(os.path.dirname(dest))
 
             if src.endswith(".mako"):
-                #Process this template file
                 with open(src, encoding='utf-8') as t_file:
                     template = Template(t_file.read(),
                                         lookup=self.template_lookup,
                                         output_encoding=None)
-                    #Remember the original path for later when setting context
-                    template.bf_meta = {"path": src}
+                    template.zf_meta = {"path": src}
 
                 with self._output_file(dest) as html_file:
                     html = self.template_render(template)
-                    #Write to disk
                     html_file.write(html)
             else:
                 self.copyfile(src, dest)
 
     def _init_filters_controllers(self):
-        #Run filter/controller defined init methods
         filter.init_filters()
         controller.init_controllers()
 
@@ -178,25 +172,25 @@ class Writer(object):
     def template_render(self, template, attrs={}):
         """Render a template"""
         # Create a context object that is fresh for each template render
-        self.bf.template_context = cache.Cache(**attrs)
-        # Provide the name of the template we are rendering:
-        self.bf.template_context.template_name = template.uri
+        self.zf.template_context = cache.Cache(**attrs)
         try:
+            # Provide the name of the template we are rendering:
+            self.zf.template_context.template_name = template.uri
             # Static pages will have a template.uri like memory:0x1d80a90
             # We conveniently remembered the original path to use instead.
-            self.bf.template_context.template_name = template.bf_meta['path']
-        except AttributeError:
-            pass
-        attrs['bf'] = self.bf
-        # Provide the template with other user defined namespaces:
-        for name, obj in self.bf.config.site.template_vars.items():
-            attrs[name] = obj
-        try:
-            return template.render_unicode(**attrs)
-        except:
-            logger.error("Error rendering template")
-            print(mako_exceptions.text_error_template().render())
-        del self.bf.template_context
+            if hasattr(template, "zf_meta"):
+                self.zf.template_context.template_name = template.zf_meta['path']
+            attrs['zf'] = self.zf
+            # Provide the template with other user defined namespaces:
+            for name, obj in self.zf.config.site.template_vars.items():
+                attrs[name] = obj
+            try:
+                return template.render_unicode(**attrs)
+            except:
+                logger.error("Error rendering template")
+                print(mako_exceptions.text_error_template().render())
+        finally:
+            del self.zf.template_context
 
     def materialize_template(self, template_name, location, attrs={}):
         """Render a named template with attrs to a location in the _site dir"""
@@ -205,7 +199,6 @@ class Writer(object):
         template.output_encoding = "utf-8"
         rendered = self.template_render(template, attrs)
         path = util.path_join(self.output_dir, location)
-        #Create the path if it doesn't exist:
         util.mkdir(os.path.split(path)[0])
         with self._output_file(path) as f:
             f.write(rendered)

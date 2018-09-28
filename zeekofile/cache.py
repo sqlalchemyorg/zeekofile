@@ -62,7 +62,7 @@ class HierarchicalCache(Cache):
             raise AttributeError
 
     def __getitem__(self, item):
-        if(type(item) == slice or not hasattr(item,"split")):
+        if(isinstance(item, slice) or not hasattr(item, "split")):
             raise TypeError("HierarchicalCache objects are not indexable nor "
                             "sliceable. If you were expecting another object "
                             "here, a parent cache object may be inproperly "
@@ -73,7 +73,7 @@ class HierarchicalCache(Cache):
         except AttributeError:
             c = self.__getattr__(item)
         for dotted_part in dotted_parts[1:]:
-            c = getattr(c,dotted_part)
+            c = getattr(c, dotted_part)
         return c
 
     def __call__(self):
@@ -95,6 +95,6 @@ class HierarchicalCache(Cache):
             Cache.__setitem__(c, key, item)
 
 # The main zeekofile cache object, transfers state between templates
-bf = HierarchicalCache()
-sys.modules['zeekofile_bf'] = bf
-bf.cache = sys.modules['zeekofile.cache']
+zf = HierarchicalCache()
+sys.modules['zeekofile_zf'] = zf
+zf.cache = sys.modules['zeekofile.cache']

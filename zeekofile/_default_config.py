@@ -1,55 +1,28 @@
 # -*- coding: utf-8 -*-
 
-######################################################################
-# This is the main Blogofile configuration file.
-# www.Blogofile.com
-#
-# This is the canonical _config.py with every single default setting.
-#
-# Don't edit this file directly; create your own _config.py (from
-# scratch or using 'zeekofile init') and your settings will override
-# these defaults.
-#
-######################################################################
+"""
+This is the canonical _config.py with all default settings.
 
-######################################################################
-# Basic Settings
-#  (almost all sites will want to configure these settings)
-######################################################################
-## site_url -- Your site's full URL
-# Your "site" is the same thing as your _site directory.
-#  If you're hosting a zeekofile powered site as a subdirectory of a larger
-#  non-zeekofile site, then you would set the site_url to the full URL
-#  including that subdirectory: "http://www.yoursite.com/path/to/zeekofile-dir"
+Individual sites have a _config.py which can override these settings.
+
+"""
+
+# site URL
 site.url = "http://www.yoursite.com"
 
-#### Blog Settings ####
 blog = controllers.blog
 
-## blog_enabled -- Should the blog be enabled?
-#  (You don't _have_ to use zeekofile to build blogs)
 blog.enabled = False
 
-## blog_path -- Blog path.
-#  This is the path of the blog relative to the site_url.
-#  If your site_url is "http://www.yoursite.com/~ryan"
-#  and you set blog_path to "/blog" your full blog URL would be
-#  "http://www.yoursite.com/~ryan/blog"
-#  Leave blank "" to set to the root of site_url
+# blog path relative to site URL
 blog.path = "/blog"
 
-## blog_name -- Your Blog's name.
-# This is used repeatedly in default blog templates
 blog.name = "Your Blog's Name"
 
-## blog_description -- A short one line description of the blog
-# used in the RSS/Atom feeds.
 blog.description = "Your Blog's short description"
 
-## blog_timezone -- the timezone that you normally write your blog posts from
 blog.timezone = "US/Eastern"
 
-## blog_posts_per_page -- Blog posts per page
 blog.posts_per_page = 5
 
 # Automatic Permalink
@@ -61,74 +34,34 @@ blog.posts_per_page = 5
 # :uuid               -> sha hash based on title
 # :filename           -> article's filename without suffix
 blog.auto_permalink.enabled = True
+
 # This is relative to site_url
 blog.auto_permalink.path = ":blog_path/:year/:month/:day/:title"
 
-######################################################################
-# Intermediate Settings
-######################################################################
-#### Disqus.com comment integration ####
-blog.disqus.enabled = False
-blog.disqus.name = "your_disqus_name"
-
-#### Emacs Integration ####
-blog.emacs_orgmode_enabled = False
-# emacs binary (orgmode must be installed)
-blog.emacs_binary = "/usr/bin/emacs"               # emacs 22 or 23 is recommended
-blog.emacs_preload_elisp = "_emacs/setup.el"          # preloaded elisp file
-blog.emacs_orgmode_preamble = r"#+OPTIONS: H:3 num:nil toc:nil \n:nil"   # added in preamble
-
-#### Blog post syntax highlighting ####
-# You can change the style to any builtin Pygments style
-# or, make your own: http://pygments.org/docs/styles
+# syntax highlighting
 filters.syntax_highlight.style = "murphy"
 filters.syntax_highlight.css_dir = "/css"
 
-#### Custom blog index ####
-# If you want to create your own index page at your blog root
-# turn this on. Otherwise zeekofile assumes you want the
-# first X posts displayed instead
+
+# custom index
 blog.custom_index = False
 
-#### Post excerpts ####
-# If you want to generate excerpts of your posts in addition to the
-# full post content turn this feature on
 blog.post_excerpts.enabled = True
 blog.post_excerpts.word_length = 25
-#Also, if you don't like the way the post excerpt is generated
-#You can define assign a new function to blog.post_excerpts.method
-#This method must accept the following arguments: (content, num_words)
 
-#### Blog pagination directory ####
-# zeekofile places extra pages of your blog in
-# a secondary directory like the following:
-# http://www.yourblog.com/blog_root/page/4
-# You can rename the "page" part here:
+# secondary directory for pagination
 blog.pagination_dir = "page"
 
-#### Blog category directory ####
-# zeekofile places extra pages of your or categories in
-# a secondary directory like the following:
-# http://www.yourblog.com/blog_root/category/your-topic/4
-# You can rename the "category" part here:
+# secondary directory for categories
 blog.category_dir = "category"
 
-#### Post encoding ####
 blog.post_encoding = "utf-8"
 
-######################################################################
-# Advanced Settings
-######################################################################
-# Use hard links when copying files. This saves disk space and shortens
-# the time to build sites that copy lots of static files.
-# This is turned off by default though, because hard links are not
-# necessarily what every user wants.
+# use hard links when copying files
 site.use_hard_links = False
 
-# These are the default ignore patterns for excluding files and dirs
-# from the _site directory
-# These can be strings or compiled patterns.
-# Strings are assumed to be case insensitive.
+
+# files to ignore when building
 site.file_ignore_patterns = [
     # All files that start with an underscore
     ".*/_.*",
@@ -144,10 +77,9 @@ site.file_ignore_patterns = [
     ".*/.(git|hg)ignore$",
     # CVS dir
     ".*/CVS$",
-    ]
+]
 
-#### Default post filters ####
-# If a post does not specify a filter chain, use the 
+# If a post does not specify a filter chain, use the
 # following defaults based on the post file extension:
 blog.post_default_filters = {
     "markdown": "syntax_highlight, markdown",
@@ -157,15 +89,19 @@ blog.post_default_filters = {
     "html": "syntax_highlight"
 }
 
-### Pre/Post build hooks:
+#  hooks
+
+
 def pre_build():
-    #Do whatever you want before the _site is built
+    # Do whatever you want before the _site is built
     pass
+
 
 def post_build():
-    #Do whatever you want after the _site is built successfully.
+    # Do whatever you want after the _site is built successfully.
     pass
 
+
 def build_finally():
-    #Do whatever you want after the _site is built successfully OR after a fatal error
+    # Do whatever you want after the _site builds or fails regardless
     pass

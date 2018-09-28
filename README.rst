@@ -2,7 +2,7 @@
 zeekofile
 =========
 
-This is zzzeek's fork of the amazing and unmaintained Blogofile, the
+This is zzzeek's fork of the amazing and as of 2018 unmaintained Blogofile, the
 static website compiler written by Ryan McGuire for Mako and Jinja2 templates.
 
 The fork exists because my websites sqlalchemy.org and zzzeek.org were built
@@ -20,5 +20,5 @@ own sites.   Additionally it merges my "blogodev" command that allows one
 to keep the development server running while altering files.
 
 Should the mainline of Blogofile become again maintained, I will enthusiastically
-port my sites to the new architecture, however for now I really need something
-that can continue to build my sites even after Python 2.7 is no longer available.
+port my sites to the new architecture.   For now, I need a Python 3 compatible
+tool that I can maintain.

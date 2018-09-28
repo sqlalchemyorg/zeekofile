@@ -50,7 +50,8 @@ import os
 import operator
 import logging
 
-from .cache import bf
+from .cache import zf
+from . import util
 
 logger = logging.getLogger("zeekofile.controller")
 
@@ -66,11 +67,10 @@ default_controller_config = {
 }
 
 
-#TODO: seems almost identical to filters.preload_filters; commonize
-def __find_controller_names(directory="_controllers"):
-    if(not os.path.isdir(directory)): #pragma: no cover
+def _find_controller_names(directory="_controllers"):
+    if(not os.path.isdir(directory)):
         return
-    #Find all the standalone .py files and modules in the _controllers dir
+    # Find all the standalone .py files and modules in the _controllers dir
     for fn in os.listdir(directory):
         p = os.path.join(directory, fn)
         if os.path.isfile(p):
@@ -81,11 +81,11 @@ def __find_controller_names(directory="_controllers"):
                 yield fn
 
 
-#TODO: seems almost identical to filters.init_filters; commonize
 def init_controllers():
     """Controllers have an optional init method that runs before the run
     method"""
-    for controller in sorted(bf.config.controllers.values(),
+    for controller in sorted(
+        zf.config.controllers.values(),
             key=operator.attrgetter("priority")):
         try:
             if "mod" in controller:
@@ -95,67 +95,23 @@ def init_controllers():
             pass
 
 
-# TODO: seems almost identical to filters.load_filter; commonize
 def load_controller(name, directory="_controllers"):
     """Load a single controller by name"""
-    #Don't generate pyc files in the _controllers directory
-    #Reset the original sys.dont_write_bytecode setting where we're done
-    try:
-        return __loaded_controllers[name]
-    except KeyError:
-        pass
-    try:
-        initial_dont_write_bytecode = sys.dont_write_bytecode
-    except KeyError:
-        initial_dont_write_bytecode = False
-    try:
-        sys.path.insert(0, directory)
-        logger.debug("loading controller: {0}".format(name))
-        try:
-            sys.dont_write_bytecode = True
-            controller = __import__(name)
-        except ImportError as e:
-            logger.error(
-                "Cannot import controller : {0} ({1})".format(name, e))
-            raise
-        # Remember the actual imported module
-        bf.config.controllers[name].mod = controller
-        # Load the zeekofile defaults for controllers:
-        for k, v in default_controller_config.items():
-            bf.config.controllers[name][k] = v
-        # Load any of the controller defined defaults:
-        try:
-            controller_config = getattr(controller, "config")
-            for k, v in controller_config.items():
-                if k != "enabled":
-                    if "." in k:
-                        #This is a hierarchical setting
-                        tail = bf.config.controllers[name]
-                        parts = k.split(".")
-                        for part in parts[:-1]:
-                            tail = tail[part]
-                        tail[parts[-1]] = v
-                    else:
-                        bf.config.controllers[name][k] = v
-        except AttributeError:
-            pass
-        #Provide every controller with a logger:
-        c_logger = logging.getLogger("zeekofile.controllers." + name)
-        bf.config.controllers[name]["logger"] = c_logger
-        return bf.config.controllers[name].mod
-    finally:
-        sys.path.remove("_controllers")
-        sys.dont_write_bytecode = initial_dont_write_bytecode
+
+    return util.load_py_module(
+        name, directory, __loaded_controllers, zf.config.controllers,
+        default_controller_config, "controllers"
+    )
 
 
 def load_controllers(directory="_controllers"):
     """Find all the controllers in the _controllers directory
-    and import them into the bf context"""
-    for name in __find_controller_names():
+    and import them into the zf context"""
+    for name in _find_controller_names():
         load_controller(name, directory)
 
 
-def defined_controllers(namespace=bf, only_enabled=True):
+def defined_controllers(namespace=zf, only_enabled=True):
     """Find all the enabled controllers in order of priority
 
     if only_enabled == False, find all controllers, regardless of
@@ -172,35 +128,37 @@ def defined_controllers(namespace=bf, only_enabled=True):
     >>> defined_controllers(bf_test, only_enabled=False)
     ['two', 'three', 'one']
     """
-    controller_priorities = [] # [(controller_name, priority),...]
+    controller_priorities = []  # [(controller_name, priority),...]
     for name, settings in namespace.config.controllers.items():
-        #Get only the ones that are enabled:
+        # Get only the ones that are enabled:
         c = namespace.config.controllers[name]
-        if "enabled" not in c or c['enabled'] == False:
-            #The controller is disabled
+        if "enabled" not in c or c['enabled'] is False:
+            # The controller is disabled
             if only_enabled:
                 continue
-        #Get the priority:
+        # Get the priority:
         if "priority" in c:
             priority = c['priority']
         else:
             priority = c['priority'] = 50
         controller_priorities.append((name, priority))
-    #Sort the controllers by priority
+    # Sort the controllers by priority
     return [x[0] for x in sorted(controller_priorities,
                                  key=operator.itemgetter(1),
                                  reverse=True)]
 
+
 def run_all():
     """Run each controller in priority order"""
-    #Get the controllers in priority order:
+    # Get the controllers in priority order:
     controller_names = defined_controllers()
-    #Temporarily add _controllers directory onto sys.path
+    # Temporarily add _controllers directory onto sys.path
     for name in controller_names:
-        controller = bf.config.controllers[name].mod
+        controller = zf.config.controllers[name].mod
         if "run" in dir(controller):
             logger.info("running controller: {0}".format(name))
             controller.run()
         else:
             logger.debug(
-                "controller {0} has no run() method, skipping it.".format(name))
+                "controller {0} has no run() method, skipping it.".format(name)
+            )

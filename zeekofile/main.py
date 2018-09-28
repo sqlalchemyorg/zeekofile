@@ -41,12 +41,14 @@ def get_args():
 def main(argv=None, **kwargs):
     parser, args = get_args()
 
+    logging.basicConfig()
+
     if args.verbose:
-        logger.setLevel(logging.INFO)
+        logging.getLogger("zeekofile").setLevel(logging.INFO)
         logger.info("Setting verbose mode")
 
     if args.veryverbose:
-        logger.setLevel(logging.DEBUG)
+        logging.getLogger("zeekofile").setLevel(logging.DEBUG)
         logger.info("Setting very verbose mode")
 
     if not os.path.isdir(args.src_dir):
@@ -80,7 +82,8 @@ def config_init(args):
     try:
         config.init("_config.py")
     except config.ConfigNotFoundException:
-        sys.exit("No configuration found in source dir: {0}".format(args.src_dir))
+        sys.exit(
+            "No configuration found in source dir: {0}".format(args.src_dir))
 
 
 if __name__ == "__main__":

@@ -13,10 +13,10 @@ from . import cache
 from . import controller
 from . import filter
 
-from .cache import bf
+from .cache import zf
 
 
-bf.config = sys.modules['zeekofile.config']
+zf.config = sys.modules['zeekofile.config']
 
 __loaded = False
 
