@@ -39,7 +39,7 @@ def _check_output(state, output_dir):
             logger.info("File %s changed since start", src)
             state[src] = src_mtime
             print("File changes detected, rebuilding...")
-            _rebuild()
+            _rebuild(output_dir)
             break
 
 
