@@ -48,7 +48,8 @@ def recompile():
     blog.url = urllib.parse.urljoin(site.url, blog.path)
 
 
-default_path = os.path.join(os.path.dirname(__file__), "_default_config.py")
+zeekofile_codebase = os.path.dirname(__file__)
+default_path = os.path.join(zeekofile_codebase, "_default_config.py")
 
 
 def __load_config(path=None):
@@ -59,7 +60,12 @@ def __load_config(path=None):
     # This will ensure that we have good default values if the user's
     # config is missing something.
     exec(open(default_path).read(), globals(), locals())
+
+    filter.preload_filters(
+        directory=os.path.join(zeekofile_codebase, '_filters'))
     filter.preload_filters()
+    controller.load_controllers(
+        directory=os.path.join(zeekofile_codebase, '_controllers'))
     controller.load_controllers()
     if path:
         exec(open(path).read(), globals(), locals())

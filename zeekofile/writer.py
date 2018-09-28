@@ -172,6 +172,7 @@ class Writer(object):
     def template_render(self, template, attrs={}):
         """Render a template"""
         # Create a context object that is fresh for each template render
+
         self.zf.template_context = cache.Cache(**attrs)
         try:
             # Provide the name of the template we are rendering:

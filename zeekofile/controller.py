@@ -107,7 +107,7 @@ def load_controller(name, directory="_controllers"):
 def load_controllers(directory="_controllers"):
     """Find all the controllers in the _controllers directory
     and import them into the zf context"""
-    for name in _find_controller_names():
+    for name in _find_controller_names(directory):
         load_controller(name, directory)
 
 

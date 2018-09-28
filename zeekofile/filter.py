@@ -57,10 +57,10 @@ def preload_filters(directory="_filters"):
         p = os.path.join(directory, fn)
         if os.path.isfile(p):
             if fn.endswith(".py"):
-                load_filter(fn[:-3])
+                load_filter(fn[:-3], directory)
         elif os.path.isdir(p):
             if os.path.isfile(os.path.join(p, "__init__.py")):
-                load_filter(fn)
+                load_filter(fn, directory)
 
 
 def init_filters():
@@ -74,10 +74,10 @@ def init_filters():
                 pass
 
 
-def load_filter(name):
+def load_filter(name, directory='_filters'):
     """Load a filter from the site's _filters directory"""
 
     return util.load_py_module(
-        name, "_filters", __loaded_filters, zf.config.filters,
+        name, directory, __loaded_filters, zf.config.filters,
         default_filter_config, "filters"
     )
