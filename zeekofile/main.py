@@ -19,6 +19,11 @@ def get_args():
               "(default is current directory)",
         metavar="DIR", default=os.curdir)
     parser.add_argument(
+        "--serve", dest="serve",
+        default=False, action="store_true",
+        help="Serve built site via HTTP w/ refresh"
+    )
+    parser.add_argument(
         "-v", "--verbose", dest="verbose",
         default=False, action="store_true",
         help="Be verbose")
@@ -62,20 +67,23 @@ def main(argv=None, **kwargs):
 
     output_dir = util.path_join("_site", util.fs_site_path_helper())
 
-    print("Running an initial build")
+    if args.serve:
+        print("Running an initial build")
+
     _rebuild(output_dir)
 
-    bfserver = server.Server(args.PORT, args.IP_ADDR)
-    bfserver.start()
-    state = {}
-    while not bfserver.is_shutdown:
-        try:
-            time.sleep(.5)
-            _check_output(state, output_dir)
-        except KeyboardInterrupt:
-            bfserver.shutdown()
-        except:
-            print(traceback.print_exc())
+    if args.serve:
+        bfserver = server.Server(args.PORT, args.IP_ADDR)
+        bfserver.start()
+        state = {}
+        while not bfserver.is_shutdown:
+            try:
+                time.sleep(.5)
+                _check_output(state, output_dir)
+            except KeyboardInterrupt:
+                bfserver.shutdown()
+            except:
+                print(traceback.print_exc())
 
 
 def config_init(args):
