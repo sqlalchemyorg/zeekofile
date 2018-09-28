@@ -33,6 +33,7 @@ setup(
         'Natural Language :: English',
     ],
     packages=["zeekofile"],
+    include_package_data=True,
     install_requires=install_requires,
     zip_safe=False,
     entry_points={
