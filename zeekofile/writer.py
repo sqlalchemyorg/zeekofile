@@ -149,6 +149,7 @@ class Writer(object):
                 with open(src, encoding='utf-8') as t_file:
                     template = Template(t_file.read(),
                                         lookup=self.template_lookup,
+                                        uri=src,
                                         output_encoding=None,
                                         strict_undefined=True)
                     template.zf_meta = {"path": src}
@@ -189,7 +190,7 @@ class Writer(object):
             try:
                 return template.render_unicode(**attrs)
             except:
-                logger.error("Error rendering template")
+                logger.error("Error rendering template %s", template.uri)
                 print(mako_exceptions.text_error_template().render())
         finally:
             del self.zf.template_context
