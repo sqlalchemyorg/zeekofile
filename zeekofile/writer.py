@@ -175,6 +175,7 @@ class Writer(object):
         """Render a template"""
         # Create a context object that is fresh for each template render
 
+        prev = self.zf.template_context
         self.zf.template_context = cache.Cache(**attrs)
         try:
             # Provide the name of the template we are rendering:
@@ -193,7 +194,7 @@ class Writer(object):
                 logger.error("Error rendering template %s", template.uri)
                 print(mako_exceptions.text_error_template().render())
         finally:
-            del self.zf.template_context
+            self.zf.template_context = prev
 
     def materialize_template(self, template_name, location, attrs={}):
         """Render a named template with attrs to a location in the _site dir"""
