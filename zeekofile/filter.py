@@ -77,7 +77,10 @@ def init_filters():
 def load_filter(name, directory='_filters'):
     """Load a filter from the site's _filters directory"""
 
-    return util.load_py_module(
+    mod = util.load_py_module(
         name, directory, __loaded_filters, zf.config.filters,
         default_filter_config, "filters"
     )
+    for alias_ in mod.config['aliases']:
+        setattr(zf.filters, alias_, mod.run)
+    return mod

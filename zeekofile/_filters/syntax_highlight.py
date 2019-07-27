@@ -6,6 +6,12 @@ import zeekofile_zf as zf
 
 css_files_written = set()
 
+config = {
+    'name': "highlight",
+    'description': "run pygments on some code",
+    'aliases': ['highlight']
+    }
+
 code_block_re = re.compile(
     r"<pre class=\"literal-block\">\n"
     r"(?:#\!(?P<lang>\w+)\n)?"
