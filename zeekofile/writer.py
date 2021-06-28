@@ -38,8 +38,9 @@ def _check_output(state, output_dir):
         elif src_mtime > state.get(src, 0):
             logger.info("File %s changed since start", src)
             state[src] = src_mtime
-            print("File changes detected, rebuilding...")
+            print("File changes detected, rebuilding...", end='', flush=True)
             _rebuild(output_dir)
+            print("...done!", flush=True)
             break
 
 
