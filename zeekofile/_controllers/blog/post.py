@@ -195,7 +195,7 @@ class Post(object):
         logger.debug("Permalink: {0}".format(self.permalink))
 
     def __parse_yaml(self, yaml_src):
-        y = yaml.load(yaml_src)
+        y = yaml.safe_load(yaml_src)
         # Load all the fields that require special processing first:
         fields_need_processing = ('permalink', 'guid', 'date', 'updated',
                                   'categories', 'tags', 'draft')
@@ -321,7 +321,7 @@ def parse_posts(directory):
     Returns a list of the posts sorted in reverse by date."""
     posts = []
     post_filename_re = re.compile(
-        ".*((\.textile$)|(\.markdown$)|(\.org$)|(\.html$)|(\.txt$)|(\.rst$))")
+        r".*((\.textile$)|(\.markdown$)|(\.org$)|(\.html$)|(\.txt$)|(\.rst$))")
     if not os.path.isdir("_posts"):
         logger.warn("This site has no _posts directory.")
         return []
@@ -338,7 +338,8 @@ def parse_posts(directory):
 
         logger.debug("Parsing post: {0}".format(post_path))
         try:
-            src = open(post_path, "r").read()
+            with open(post_path, "r") as _file:
+                src = _file.read()
             if py2k:
                 src = src.decode(
                     zf.config.controllers.blog.post_encoding)
