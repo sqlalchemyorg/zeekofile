@@ -64,19 +64,19 @@ site.use_hard_links = False
 # files to ignore when building
 site.file_ignore_patterns = [
     # All files that start with an underscore
-    ".*/_.*",
+    r".*/_.*",
     # Emacs temporary files
-    ".*/#.*",
+    r".*/#.*",
     # Emacs/Vim temporary files
-    ".*~$",
+    r".*~$",
     # Vim swap files
-    ".*/\..*\.swp$",
+    r".*/\..*\.swp$",
     # VCS directories
-    ".*/\.(git|hg|svn|bzr)$",
+    r".*/\.(git|hg|svn|bzr)$",
     # Git and Mercurial ignored files definitions
-    ".*/.(git|hg)ignore$",
+    r".*/.(git|hg)ignore$",
     # CVS dir
-    ".*/CVS$",
+    r".*/CVS$",
 ]
 
 # If a post does not specify a filter chain, use the
