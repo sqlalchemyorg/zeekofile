@@ -24,6 +24,15 @@ def get_args():
         help="Serve built site via HTTP w/ refresh"
     )
     parser.add_argument(
+        "--no-delete", dest="no_delete",
+        default=False, action="store_true",
+        help=(
+            "when putting new files in _site, don't "
+            "delete existing files / directories (but still overwrite "
+            "specific files)"
+        )
+    )
+    parser.add_argument(
         "-v", "--verbose", dest="verbose",
         default=False, action="store_true",
         help="Be verbose")
@@ -70,7 +79,9 @@ def main(argv=None, **kwargs):
     if args.serve:
         print("Running an initial build")
 
-    _rebuild(output_dir)
+    delete = not args.no_delete
+
+    _rebuild(output_dir, delete)
 
     if args.serve:
         bfserver = server.Server(args.PORT, args.IP_ADDR)
@@ -79,7 +90,7 @@ def main(argv=None, **kwargs):
         while not bfserver.is_shutdown:
             try:
                 time.sleep(.5)
-                _check_output(state, output_dir)
+                _check_output(state, output_dir, delete)
             except KeyboardInterrupt:
                 bfserver.shutdown()
             except:

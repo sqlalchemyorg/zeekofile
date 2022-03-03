@@ -29,7 +29,7 @@ def _file_mtime(f):
         return st[stat.ST_MTIME]
 
 
-def _check_output(state, output_dir):
+def _check_output(state, output_dir, delete):
     starting = not(state)
     for src, dest in _walk_files(output_dir, True):
         src_mtime = _file_mtime(src)
@@ -39,14 +39,14 @@ def _check_output(state, output_dir):
             logger.info("File %s changed since start", src)
             state[src] = src_mtime
             print("File changes detected, rebuilding...", end='', flush=True)
-            _rebuild(output_dir)
+            _rebuild(output_dir, delete)
             print("...done!", flush=True)
             break
 
 
-def _rebuild(output_dir):
+def _rebuild(output_dir, delete):
     writer = Writer()
-    writer.write_site(output_dir)
+    writer.write_site(output_dir, delete)
 
 
 def _walk_files(output_dir, include_src_templates):
@@ -99,29 +99,30 @@ class Writer(object):
         self.zf.writer = self
         self.zf.logger = logger
 
-    def write_site(self, output_dir):
+    def write_site(self, output_dir, delete=True):
         self._load_zf_cache()
         self._init_filters_controllers()
         self._run_controllers()
         self._write_files()
-        self._copy_to_site(output_dir)
+        self._copy_to_site(output_dir, delete)
 
     def copyfile(self, src, dest):
         logger.debug("Copying file: " + src)
         shutil.copyfile(src, dest)
 
-    def _copy_to_site(self, output_dir):
+    def _copy_to_site(self, output_dir, delete):
         files_ = []
         self._copytree(self.output_dir, output_dir, files_)
-        shutil.rmtree(self.output_dir)
-        files_ = set(files_)
-        for root, dirs, files in os.walk(output_dir):
-            for file_ in files:
-                path = os.path.join(root, file_)
-                relative_name = path[len(output_dir):]
-                if relative_name not in files_:
-                    logger.info("Deleting: %s", path)
-                    os.remove(path)
+        if delete:
+            shutil.rmtree(self.output_dir)
+            files_ = set(files_)
+            for root, dirs, files in os.walk(output_dir):
+                for file_ in files:
+                    path = os.path.join(root, file_)
+                    relative_name = path[len(output_dir):]
+                    if relative_name not in files_:
+                        logger.info("Deleting: %s", path)
+                        os.remove(path)
 
     def _copytree(self, src, dst, files_):
         names = os.listdir(src)
