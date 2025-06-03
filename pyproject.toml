@@ -15,7 +15,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
@@ -41,3 +41,12 @@ path = "zeekofile/__init__.py"
 include = [
     "/zeekofile",
 ]
+
+
+[tool.black]
+line-length = 79
+target-version = ['py39']
+
+
+[tool.zimports]
+black-line-length = 79

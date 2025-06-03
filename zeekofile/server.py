@@ -1,17 +1,17 @@
-from http.server import SimpleHTTPRequestHandler
 from http.server import HTTPServer
+from http.server import SimpleHTTPRequestHandler
 import logging
 import os
-import sys
 import re
-from urllib.parse import urlparse
+import sys
 import threading
+from urllib.parse import urlparse
 
 from . import config
 from . import util
 from .cache import zf
 
-zf.server = sys.modules['zeekofile.server']
+zf.server = sys.modules["zeekofile.server"]
 
 logger = logging.getLogger("zeekofile.server")
 
@@ -33,7 +33,11 @@ class Server(threading.Thread):
         self.sa = self.httpd.socket.getsockname()
 
     def run(self):
-        print("Zeekofile server started on {0}:{1} ...".format(self.sa[0],self.sa[1]))
+        print(
+            "Zeekofile server started on {0}:{1} ...".format(
+                self.sa[0], self.sa[1]
+            )
+        )
         self.httpd.serve_forever()
 
     def shutdown(self):
@@ -62,17 +66,15 @@ for the root page? : <a href="{0}">{1}</a>
 
     def translate_path(self, path):
         site_path = urlparse(config.site.url).path
-        if(len(site_path.strip("/")) > 0 and
-                not path.startswith(site_path)):
+        if len(site_path.strip("/")) > 0 and not path.startswith(site_path):
             self.error_message_format = self.error_template
             return ""  # Results in a 404
 
-        p = SimpleHTTPRequestHandler.translate_path(
-            self, path)
+        p = SimpleHTTPRequestHandler.translate_path(self, path)
         if len(site_path.strip("/")) > 0:
             build_path = os.path.join(
-                os.getcwd(),
-                util.path_join(site_path.strip("/")))
+                os.getcwd(), util.path_join(site_path.strip("/"))
+            )
         else:
             build_path = os.getcwd()
         build_path = re.sub(build_path, os.path.join(os.getcwd(), "_site"), p)

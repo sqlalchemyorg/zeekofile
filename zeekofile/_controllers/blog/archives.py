@@ -27,8 +27,8 @@ def sort_into_archives():
         except KeyError:
             blog.archived_posts[link] = [post]
     for archive, posts in sorted(
-            blog.archived_posts.items(),
-            key=operator.itemgetter(0), reverse=True):
+        blog.archived_posts.items(), key=operator.itemgetter(0), reverse=True
+    ):
         name = posts[0].date.strftime("%B %Y")
         blog.archive_links.append((archive, name, len(posts)))
 

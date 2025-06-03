@@ -86,7 +86,7 @@ blog.post_default_filters = {
     "textile": "syntax_highlight, textile",
     "org": "syntax_highlight, org",
     "rst": "syntax_highlight, rst",
-    "html": "syntax_highlight"
+    "html": "syntax_highlight",
 }
 
 #  hooks

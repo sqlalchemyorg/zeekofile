@@ -5,18 +5,17 @@
 into it."""
 
 import os
+import re
 import sys
 import urllib.parse
-import re
 
 from . import cache
 from . import controller
 from . import filter
-
 from .cache import zf
 
 
-zf.config = sys.modules['zeekofile.config']
+zf.config = sys.modules["zeekofile.config"]
 
 __loaded = False
 
@@ -28,6 +27,7 @@ class UnknownConfigSectionException(Exception):
 class ConfigNotFoundException(Exception):
     pass
 
+
 override_options = {}
 
 site = cache.HierarchicalCache()
@@ -36,15 +36,14 @@ filters = cache.HierarchicalCache()
 
 
 def recompile():
-    global site
     site.compiled_file_ignore_patterns = []
     for p in site.file_ignore_patterns:
         if isinstance(p, str):
             site.compiled_file_ignore_patterns.append(
-                re.compile(p, re.IGNORECASE))
+                re.compile(p, re.IGNORECASE)
+            )
         else:
             site.compiled_file_ignore_patterns.append(p)
-    global blog
     blog.url = urllib.parse.urljoin(site.url, blog.path)
 
 
@@ -65,10 +64,12 @@ def __load_config(path=None):
         exec(_file.read(), globals(), lcls)
 
     filter.preload_filters(
-        directory=os.path.join(zeekofile_codebase, '_filters'))
+        directory=os.path.join(zeekofile_codebase, "_filters")
+    )
     filter.preload_filters()
     controller.load_controllers(
-        directory=os.path.join(zeekofile_codebase, '_controllers'))
+        directory=os.path.join(zeekofile_codebase, "_controllers")
+    )
     controller.load_controllers()
 
     if path:
@@ -102,4 +103,4 @@ def init(config_file_path=None):
         __load_config(config_file_path)
     else:
         __load_config()
-    return globals()['__name__']
+    return globals()["__name__"]

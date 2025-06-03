@@ -8,14 +8,19 @@ current working directory.
 
 import logging
 import os
-import stat
 import shutil
+import stat
 import tempfile
-from mako.template import Template
-from mako.lookup import TemplateLookup
-from mako import exceptions as mako_exceptions
 
-from . import config, util, cache, filter, controller
+from mako import exceptions as mako_exceptions
+from mako.lookup import TemplateLookup
+from mako.template import Template
+
+from . import cache
+from . import config
+from . import controller
+from . import filter
+from . import util
 
 
 logger = logging.getLogger("zeekofile.writer")
@@ -30,7 +35,7 @@ def _file_mtime(f):
 
 
 def _check_output(state, output_dir, delete):
-    starting = not(state)
+    starting = not (state)
     for src, dest in _walk_files(output_dir, True):
         src_mtime = _file_mtime(src)
         if starting:
@@ -38,7 +43,7 @@ def _check_output(state, output_dir, delete):
         elif src_mtime > state.get(src, 0):
             logger.info("File %s changed since start", src)
             state[src] = src_mtime
-            print("File changes detected, rebuilding...", end='', flush=True)
+            print("File changes detected, rebuilding...", end="", flush=True)
             _rebuild(output_dir, delete)
             print("...done!", flush=True)
             break
@@ -59,16 +64,16 @@ def _walk_files(output_dir, include_src_templates):
             # Exclude some dirs
             d_path = util.path_join(root, d)
             if util.should_ignore_path(d_path) and (
-                not include_src_templates or
-                not d.startswith('_') or
-                d.startswith("_site")
+                not include_src_templates
+                or not d.startswith("_")
+                or d.startswith("_site")
             ):
                 dirs.remove(d)
 
         for t_fn in files:
             t_fn_path = util.path_join(root, t_fn)
             if util.should_ignore_path(t_fn_path):
-                #Ignore this file.
+                # Ignore this file.
                 logger.debug("Ignoring file: " + t_fn_path)
                 continue
             elif t_fn.endswith(".mako"):
@@ -91,8 +96,10 @@ class Writer(object):
         self.output_dir = tempfile.mkdtemp()
         self.template_lookup = TemplateLookup(
             directories=[".", self.base_template_dir],
-            input_encoding='utf-8', output_encoding='utf-8',
-            encoding_errors='replace')
+            input_encoding="utf-8",
+            output_encoding="utf-8",
+            encoding_errors="replace",
+        )
 
     def _load_zf_cache(self):
         self.zf = cache.zf
@@ -119,7 +126,7 @@ class Writer(object):
             for root, dirs, files in os.walk(output_dir):
                 for file_ in files:
                     path = os.path.join(root, file_)
-                    relative_name = path[len(output_dir):]
+                    relative_name = path[len(output_dir) :]
                     if relative_name not in files_:
                         logger.info("Deleting: %s", path)
                         os.remove(path)
@@ -134,7 +141,7 @@ class Writer(object):
                 self._copytree(srcname, dstname, files_)
             else:
                 shutil.copy2(srcname, dstname)
-            relative_name = os.path.normpath(srcname[len(self.output_dir):])
+            relative_name = os.path.normpath(srcname[len(self.output_dir) :])
             files_.append(relative_name)
 
     def _write_files(self):
@@ -148,12 +155,14 @@ class Writer(object):
                 util.mkdir(os.path.dirname(dest))
 
             if src.endswith(".mako"):
-                with open(src, encoding='utf-8') as t_file:
-                    template = Template(t_file.read(),
-                                        lookup=self.template_lookup,
-                                        uri=src,
-                                        output_encoding=None,
-                                        strict_undefined=True)
+                with open(src, encoding="utf-8") as t_file:
+                    template = Template(
+                        t_file.read(),
+                        lookup=self.template_lookup,
+                        uri=src,
+                        output_encoding=None,
+                        strict_undefined=True,
+                    )
                     template.zf_meta = {"path": src}
 
                 with self._output_file(dest) as html_file:
@@ -171,7 +180,7 @@ class Writer(object):
         controller.run_all()
 
     def _output_file(self, name):
-        return open(name, 'w', encoding='utf-8')
+        return open(name, "w", encoding="utf-8")
 
     def template_render(self, template, attrs={}):
         """Render a template"""
@@ -185,8 +194,10 @@ class Writer(object):
             # Static pages will have a template.uri like memory:0x1d80a90
             # We conveniently remembered the original path to use instead.
             if hasattr(template, "zf_meta"):
-                self.zf.template_context.template_name = template.zf_meta['path']
-            attrs['zf'] = self.zf
+                self.zf.template_context.template_name = template.zf_meta[
+                    "path"
+                ]
+            attrs["zf"] = self.zf
             # Provide the template with other user defined namespaces:
             for name, obj in self.zf.config.site.template_vars.items():
                 attrs[name] = obj

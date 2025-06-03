@@ -16,6 +16,7 @@ class Cache(dict):
       ...
     AttributeError: 'Cache' object has no attribute 'section'
     """
+
     def __init__(self, **kw):
         dict.__init__(self, kw)
         self.__dict__ = self
@@ -50,11 +51,14 @@ class HierarchicalCache(Cache):
     >>> c.sub.d.has_key("doesn't have this")
     False
     """
+
     def __getattr__(self, attr):
-        if not attr.startswith("_") and \
-                "(" not in attr and \
-                "[" not in attr and \
-                attr != "trait_names":
+        if (
+            not attr.startswith("_")
+            and "(" not in attr
+            and "[" not in attr
+            and attr != "trait_names"
+        ):
             c = HierarchicalCache()
             Cache.__setitem__(self, attr, c)
             return c
@@ -62,11 +66,13 @@ class HierarchicalCache(Cache):
             raise AttributeError
 
     def __getitem__(self, item):
-        if(isinstance(item, slice) or not hasattr(item, "split")):
-            raise TypeError("HierarchicalCache objects are not indexable nor "
-                            "sliceable. If you were expecting another object "
-                            "here, a parent cache object may be inproperly "
-                            "configured.")
+        if isinstance(item, slice) or not hasattr(item, "split"):
+            raise TypeError(
+                "HierarchicalCache objects are not indexable nor "
+                "sliceable. If you were expecting another object "
+                "here, a parent cache object may be inproperly "
+                "configured."
+            )
         dotted_parts = item.split(".")
         try:
             c = self.__getattribute__(dotted_parts[0])
@@ -77,9 +83,11 @@ class HierarchicalCache(Cache):
         return c
 
     def __call__(self):
-        raise TypeError("HierarchicalCache objects are not callable. If "
-                        "you were expecting this to be a method, a "
-                        "parent cache object may be inproperly configured.")
+        raise TypeError(
+            "HierarchicalCache objects are not callable. If "
+            "you were expecting this to be a method, a "
+            "parent cache object may be inproperly configured."
+        )
 
     def __setitem__(self, key, item):
         c = self
@@ -94,7 +102,8 @@ class HierarchicalCache(Cache):
         finally:
             Cache.__setitem__(c, key, item)
 
+
 # The main zeekofile cache object, transfers state between templates
 zf = HierarchicalCache()
-sys.modules['zeekofile_zf'] = zf
-zf.cache = sys.modules['zeekofile.cache']
+sys.modules["zeekofile_zf"] = zf
+zf.cache = sys.modules["zeekofile.cache"]

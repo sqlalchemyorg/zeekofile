@@ -1,12 +1,12 @@
-import re
+import logging
 import os
+import re
 import sys
 from urllib.parse import urlparse
-import logging
 
 from .cache import zf
 
-zf.util = sys.modules['zeekofile.util']
+zf.util = sys.modules["zeekofile.util"]
 
 
 logger = logging.getLogger("zeekofile.util")
@@ -31,8 +31,8 @@ def html_escape(text):
 
 def should_ignore_path(path):
     """See if a given path matches the ignore patterns"""
-    if os.path.sep == '\\':
-        path = path.replace('\\', '/')
+    if os.path.sep == "\\":
+        path = path.replace("\\", "/")
     for p in zf.config.site.compiled_file_ignore_patterns:
         if p.match(path):
             return True
@@ -48,15 +48,18 @@ def mkdir(newdir):
     if os.path.isdir(newdir):
         pass
     elif os.path.isfile(newdir):
-        raise OSError("a file with the same name as the desired " \
-                          "dir, '{0}', already exists.".format(newdir))
+        raise OSError(
+            "a file with the same name as the desired "
+            "dir, '{0}', already exists.".format(newdir)
+        )
     else:
         head, tail = os.path.split(newdir)
         if head and not os.path.isdir(head):
             mkdir(head)
-        #print "mkdir {0}.format(repr(newdir))
+        # print "mkdir {0}.format(repr(newdir))
         if tail:
             os.mkdir(newdir)
+
 
 def url_path_helper(*parts):
     """
@@ -131,8 +134,8 @@ def path_join(*parts, **kwargs):
 
     if sep is specified, use that as the seperator
     rather than the system default"""
-    if 'sep' in kwargs:
-        sep = kwargs['sep']
+    if "sep" in kwargs:
+        sep = kwargs["sep"]
     else:
         sep = os.sep
     if os.sep == r"\\":
@@ -166,7 +169,8 @@ def recursive_file_list(directory, regex=None):
 
 
 def load_py_module(
-        name, directory, cache, zf_config, default_zf_config, logging_name):
+    name, directory, cache, zf_config, default_zf_config, logging_name
+):
     try:
         return cache[name]
     except KeyError:
@@ -187,14 +191,13 @@ def load_py_module(
             sys.dont_write_bytecode = True
             module = __import__(name)
         except ImportError as e:
-            logger.error(
-                "Cannot import py module : {0} ({1})".format(name, e))
+            logger.error("Cannot import py module : {0} ({1})".format(name, e))
             raise
         # Remember the actual imported module
         zf_config[name].mod = module
 
         if hasattr(module, "config") and "aliases" in module.config:
-            for alias in module.config['aliases']:
+            for alias in module.config["aliases"]:
                 cache[alias] = module
                 zf_config[alias] = zf_config[name]
 

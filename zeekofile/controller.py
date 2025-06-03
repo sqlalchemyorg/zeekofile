@@ -1,57 +1,56 @@
 """
- Controllers
+Controllers
 
- Blogofile controllers reside in the user's _controllers directory
- and can generate content for a site.
+Blogofile controllers reside in the user's _controllers directory
+and can generate content for a site.
 
- Controllers can either be standalone .py files, or they can be modules.
+Controllers can either be standalone .py files, or they can be modules.
 
- Every controller has a contract to provide the following:
-  * a run() method, which accepts no arguments.
-  * A dictionary called "config" containing the following information:
-    * name - The human friendly name for the controller.
-    * author - The name or group responsible for writing the controller.
-    * description - A brief description of what the controller does.
-    * url - The URL where the controller is hosted.
-    * priority - The default priority to determine sequence of execution
-       This is optional, if not provided, it will default to 50.
-       Controllers with higher priorities get run sooner than ones with
-       lower priorities.
+Every controller has a contract to provide the following:
+ * a run() method, which accepts no arguments.
+ * A dictionary called "config" containing the following information:
+   * name - The human friendly name for the controller.
+   * author - The name or group responsible for writing the controller.
+   * description - A brief description of what the controller does.
+   * url - The URL where the controller is hosted.
+   * priority - The default priority to determine sequence of execution
+      This is optional, if not provided, it will default to 50.
+      Controllers with higher priorities get run sooner than ones with
+      lower priorities.
 
- Example controller (either a standalone .py file or
-                       __init__.py inside a module):
+Example controller (either a standalone .py file or
+                      __init__.py inside a module):
 
-     config = {"name"        : "My Controller",
-               "description" : "Does cool stuff",
-               "author"      : "Joe Programmer",
-               "url"         : "http://www.yoururl.com/my-controller",
-               "priority"    : 90.0}
+    config = {"name"        : "My Controller",
+              "description" : "Does cool stuff",
+              "author"      : "Joe Programmer",
+              "url"         : "http://www.yoururl.com/my-controller",
+              "priority"    : 90.0}
 
-     def run():
-         do_whatever_it_needs_to()
+    def run():
+        do_whatever_it_needs_to()
 
- Users can configure a controller in _config.py:
+Users can configure a controller in _config.py:
 
-   #To enable the controller (default is always disabled):
-   controller.name_of_controller.enabled = True
+  #To enable the controller (default is always disabled):
+  controller.name_of_controller.enabled = True
 
-   #To set the priority:
-   controllers.name_of_controller.priority = 40
+  #To set the priority:
+  controllers.name_of_controller.priority = 40
 
-   #To set a controller specific setting:
-   controllers.name_of_controller.nifty_setting = "whatever"
+  #To set a controller specific setting:
+  controllers.name_of_controller.nifty_setting = "whatever"
 
- Settings set in _config.py always override any default configuration
- for the controller.
+Settings set in _config.py always override any default configuration
+for the controller.
 """
 
-import sys
-import os
-import operator
 import logging
+import operator
+import os
 
-from .cache import zf
 from . import util
+from .cache import zf
 
 logger = logging.getLogger("zeekofile.controller")
 
@@ -63,12 +62,12 @@ default_controller_config = {
     "author": None,
     "url": None,
     "priority": 50.0,
-    "enabled": False
+    "enabled": False,
 }
 
 
 def _find_controller_names(directory="_controllers"):
-    if(not os.path.isdir(directory)):
+    if not os.path.isdir(directory):
         return
     # Find all the standalone .py files and modules in the _controllers dir
     for fn in os.listdir(directory):
@@ -85,8 +84,8 @@ def init_controllers():
     """Controllers have an optional init method that runs before the run
     method"""
     for controller in sorted(
-        zf.config.controllers.values(),
-            key=operator.attrgetter("priority")):
+        zf.config.controllers.values(), key=operator.attrgetter("priority")
+    ):
         try:
             if "mod" in controller:
                 if type(controller.mod).__name__ == "module":
@@ -99,8 +98,12 @@ def load_controller(name, directory="_controllers"):
     """Load a single controller by name"""
 
     return util.load_py_module(
-        name, directory, __loaded_controllers, zf.config.controllers,
-        default_controller_config, "controllers"
+        name,
+        directory,
+        __loaded_controllers,
+        zf.config.controllers,
+        default_controller_config,
+        "controllers",
     )
 
 
@@ -132,20 +135,23 @@ def defined_controllers(namespace=zf, only_enabled=True):
     for name, settings in namespace.config.controllers.items():
         # Get only the ones that are enabled:
         c = namespace.config.controllers[name]
-        if "enabled" not in c or c['enabled'] is False:
+        if "enabled" not in c or c["enabled"] is False:
             # The controller is disabled
             if only_enabled:
                 continue
         # Get the priority:
         if "priority" in c:
-            priority = c['priority']
+            priority = c["priority"]
         else:
-            priority = c['priority'] = 50
+            priority = c["priority"] = 50
         controller_priorities.append((name, priority))
     # Sort the controllers by priority
-    return [x[0] for x in sorted(controller_priorities,
-                                 key=operator.itemgetter(1),
-                                 reverse=True)]
+    return [
+        x[0]
+        for x in sorted(
+            controller_priorities, key=operator.itemgetter(1), reverse=True
+        )
+    ]
 
 
 def run_all():

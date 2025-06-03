@@ -1,13 +1,13 @@
-import sys
-import os
 import logging
+import os
+import sys
 
-from .cache import zf
 from . import util
+from .cache import zf
 
 logger = logging.getLogger("zeekofile.filter")
 
-zf.filter = sys.modules['zeekofile.filter']
+zf.filter = sys.modules["zeekofile.filter"]
 
 __loaded_filters = {}
 
@@ -15,7 +15,7 @@ default_filter_config = {
     "name": None,
     "description": None,
     "author": None,
-    "url": None
+    "url": None,
 }
 
 
@@ -51,7 +51,7 @@ def parse_chain(chain):
 def preload_filters(directory="_filters"):
     # Find all the standalone .py files and modules
     # in the _filters dir and load them into zf
-    if(not os.path.isdir(directory)):
+    if not os.path.isdir(directory):
         return
     for fn in os.listdir(directory):
         p = os.path.join(directory, fn)
@@ -74,13 +74,17 @@ def init_filters():
                 pass
 
 
-def load_filter(name, directory='_filters'):
+def load_filter(name, directory="_filters"):
     """Load a filter from the site's _filters directory"""
 
     mod = util.load_py_module(
-        name, directory, __loaded_filters, zf.config.filters,
-        default_filter_config, "filters"
+        name,
+        directory,
+        __loaded_filters,
+        zf.config.filters,
+        default_filter_config,
+        "filters",
     )
-    for alias_ in mod.config['aliases']:
+    for alias_ in mod.config["aliases"]:
         setattr(zf.filters, alias_, mod.run)
     return mod
