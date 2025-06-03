@@ -59,8 +59,10 @@ def __load_config(path=None):
     # 3) Finally load the user's config.
     # This will ensure that we have good default values if the user's
     # config is missing something.
+    lcls = locals()
+
     with open(default_path) as _file:
-        exec(_file.read(), globals(), locals())
+        exec(_file.read(), globals(), lcls)
 
     filter.preload_filters(
         directory=os.path.join(zeekofile_codebase, '_filters'))
@@ -68,12 +70,13 @@ def __load_config(path=None):
     controller.load_controllers(
         directory=os.path.join(zeekofile_codebase, '_controllers'))
     controller.load_controllers()
+
     if path:
         with open(path) as _file:
-            exec(_file.read(), globals(), locals())
+            exec(_file.read(), globals(), lcls)
 
     # config is now in locals() but needs to be in globals()
-    for k, v in locals().items():
+    for k, v in lcls.items():
         globals()[k] = v
 
     # Override any options (from unit tests)
